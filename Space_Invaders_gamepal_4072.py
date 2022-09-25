@@ -1,105 +1,126 @@
-import pygame
 import turtle
 import random
-import math
+import time
 import os
 import sys
-import time
-import pygame.mixer
-from pygame.locals import *
-pygame.init()
-screen = pygame.display.set_mode((640, 480))
-pygame.display.set_caption('Space Invaders: GAMEPAL EDIITION V0.0X')
-pygame.mouse.set_visible(0)
-background = pygame.Surface(screen.get_size())
-background = background.convert()
-background.fill((0, 0, 0))
-clock = pygame.time.Clock()
-class Invader(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
+import math
+## haeve the game run at 4k and use the gamepal sdk and use the huggingface dall e mega for graphics
+wn = turtle.Screen()
+wn.bgcolor("black")
+wn.title("Space Invaders")
+## resolution of the window
+wn.setup(width=1920, height=1080)
+player = turtle.Turtle()
+player.color("blue")
+payerspeed = 15
+bulletstate = "ready"
+### fix da code settings "Very High"
+turtle.bgcolor("black")
+turtle.title("Space Invaders")
+playerspeed = 15
+player.shape("triangle")
+player.penup()
+player.speed(0)
+player.setposition(0, -250)
+player.setheading(90)
+enemies = []
+for i in range(20):
+    enemies.append(turtle.Turtle())
+for enemy in enemies:
+    enemy.color("red")
+    enemy.shape("circle")
+    ## make a page about the enemey
+    enemies.append(turtle.Turtle())
+    ## make a page about the enemey
+    enemies.append(turtle.Turtle())
+    ## make a page about the enemey
+    enemy.penup()
+    enemy.speed(0)
+    x = random.randint(-200, 200)
+    y = random.randint(100, 250)
+    enemy.setposition(x, y)
+enemyspeed = 2
+bullet = turtle.Turtle()
+bullet.color("yellow")
+bullet.shape("triangle")
+bullet.penup()
+bullet.speed(0)
+bullet.setheading(90)
+bullet.shapesize(0.5, 0.5)
+bullet.hideturtle()
+bulletspeed = 20
+bulletstate = "ready"
+def move_left():
+    x = player.xcor()
+    x -= playerspeed
+    if x < -280:
+        x = - 280
+    player.setx(x)
+def move_right():
+    x = player.xcor()
+    x += playerspeed
+    if x > 280:
+        x = 280
+    player.setx(x)
+def fire_bullet():
+    global bulletstate
+    if bulletstate == "ready":
+        bulletstate = "fire"
+        x = player.xcor()
+        y = player.ycor() + 10
+        bullet.setposition(x, y)
+        bullet.showturtle()
+def isCollision(t1, t2):
+    distance = math.sqrt(math.pow(t1.xcor()-t2.xcor(),2)+math.pow(t1.ycor()-t2.ycor(),2))
+    if distance < 15:
+        return True
+    else:
+        return False
+turtle.listen()
+turtle.onkey(move_left, "Left")
+turtle.onkey(move_right, "Right")
+turtle.onkey(fire_bullet, "space")
+while True:
+    for enemy in enemies:
+        x = enemy.xcor()
+        x += enemyspeed
 
-        ## load files from spaceinvaders.py directory
-      ## load any file name invader.png
-        ## load any file named invader.gif
-        self.load = pygame.image.load(os.path.join('https://cdn.discordapp.com/attachments/989290169758789682/1023368548829118494/EYE_PATCH_SUSIE_80x80_spaceship_metallix_retro_atari_rectange_1_40d6a2f0-160b-4c60-b788-e305a3ffb913.png')).convert()
-        screen = pygame.display.get_surface()
-        self.rect = self.image.get_rect()
-        self.reset()
-        self.dx = 5
-    def update(self):
-        self.rect.centerx += self.dx
-        if self.rect.left > screen.get_width():
-            self.reset()
-    def reset(self):
-        self.rect.left = 0
-        self.rect.centery = random.randrange(0, screen.get_height())
-class Player(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = pygame.image.load('textures/player.png'), -1
-        self.image = self.image.convert()
-        self.rect = self.image.get_rect()
-        self.reset()
-    def update(self):
-        mousex, mousey = pygame.mouse.get_pos()
-        self.rect.center = (40, mousey)
-    def reset(self):
-        self.rect.left = 0
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = pygame.image.load("https://cdn.discordapp.com/attachments/989290169758789682/1023377275623837726/EYE_PATCH_SUSIE_256x256_-_SCP_4072_Settting_Very_low_-_player_s_4eac8bdc-1cc5-4260-b3ca-b4319a640449.png").convert()
-        self.image = self.image.convert()
-        self.rect = self.image.get_rect()
-        self.reset()
-    def update(self):
-        self.rect.centerx += self.dx
-        if self.rect.right > screen.get_width():
-            self.reset()
-    def reset(self):
-        self.rect.left = 0
-        self.rect.centery = random.randrange(0, screen.get_height())
-        self.dx = 5
-class Explosion(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-        self.image, self.rect = ('https://cdn.discordapp.com/attachments/989290169758789682/1023371854586597476/EYE_PATCH_SUSIE_firecracker_169_SCP_4072_-_Very_low_-_1_ae186eb3-e13a-4c57-91f8-6a551ef58f80.png', -1)
-        self.image = self.image.convert()
-        self.rect = self.image.get_rect()
-        self.reset()
-    def update(self):
-        self.rect.centerx += self.dx
-        if self.rect.right > screen.get_width():
-            self.reset()
-    def reset(self):
-        self.rect.left = 0
-        self.rect.centery = random.randrange(0, screen.get_height())
-        self.dx = 5
-def main():
-    screen = pygame.display.set_mode((640, 480))
-    pygame.display.set_caption('Space Invaders')
-    pygame.mouse.set_visible(0)
-    background = pygame.Surface(screen.get_size())
-    background = background.convert()
-    background.fill((0, 0, 0))
-    clock = pygame.time.Clock()
-    invader1 = Invader()
-    player = Player()
-    bullet = Bullet()
-    explosion = Explosion()
-    allSprites = pygame.sprite.OrderedUpdates(invader1, player, bullet, explosion)
-    keepGoing = True
-    while keepGoing:
-        clock.tick(30)
-        pygame.mouse.set_visible(0)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                keepGoing = False
-        allSprites.clear(screen, background)
-        allSprites.update()
-        allSprites.draw(screen)
-        pygame.display.flip()
-    pygame.quit()
-if __name__ == "__main__":
-    main()
+        ## fix da code "Very High"
+        if x > 280:
+            for e in enemies:
+                y = e.ycor()
+                y -= 40
+                e.sety(y)
+            enemyspeed *= -1
+ ## use the doom algrothim
+        if x < -280:
+            for e in enemies:
+                y = e.ycor()
+                y -= 40
+                e.sety(y)
+            enemyspeed *= -1  
+       ## optimize this code using GAMEPAL SDK AT TIME 5:25 AND SETTINGS VERY HIGH
+        if isCollision(bullet, enemy):
+            bullet.hideturtle()
+            bulletstate = "ready"
+            bullet.setposition(0, -400)
+            x = random.randint(-200, 200)
+            y = random.randint(100, 250)
+            enemy.setposition(x, y)
+        if isCollision(player, enemy):
+            player.hideturtle()
+            enemy.hideturtle()
+            print("Game Over")
+            break
+        enemy.setx(x)
+    if bulletstate == "fire":
+        y = bullet.ycor()
+        y += bulletspeed
+        bullet.sety(y)
+    if bullet.ycor() > 275:
+        bullet.hideturtle()
+        bulletstate = "ready"
+    if player.ycor() > 275:
+        player.hideturtle()
+        print("Game Over")
+        break
